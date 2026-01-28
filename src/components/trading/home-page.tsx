@@ -4,6 +4,7 @@ import { Bell, Globe, Shield, Zap, Globe2, Bitcoin, CreditCard, FileText, Headph
 import { Button } from "@/components/ui/button"
 import { FloatingParticles } from "./floating-particles"
 import { useTranslation } from "react-i18next"
+import { usePrices } from "@/hooks/use-prices"
 
 // Header Component
 function Header() {
@@ -92,22 +93,11 @@ function QuickActions({ onShowCustomerService }: QuickActionsProps) {
   )
 }
 
-// Market Data Component
-const marketItems = [
-  { symbol: "XAU", name: "London Gold", price: "4,882.42", change: "+0.28%", isPositive: true, iconBg: "bg-gradient-to-br from-[#f59e0b] to-[#b45309]" },
-  { symbol: "XAG", name: "London Silver", price: "95.45", change: "-0.16%", isPositive: false, iconBg: "bg-gradient-to-br from-[#fbbf24] to-[#d97706]" },
-  { symbol: "CL", name: "WTI Oil", price: "59.421", change: "-0.46%", isPositive: false, iconBg: "bg-gradient-to-br from-[#7f1d1d] to-[#450a0a]" },
-  { symbol: "HG", name: "COMEX Copper", price: "577.551", change: "+0.70%", isPositive: true, iconBg: "bg-gradient-to-br from-[#c2410c] to-[#9a3412]" },
-  { symbol: "NG", name: "Natural Gas Futures", price: "3.679", change: "+0.41%", isPositive: true, iconBg: "bg-gradient-to-br from-[#0891b2] to-[#0e7490]" },
-  { symbol: "USDAUD", name: "USDAUD", price: "1.4633", change: "-0.14%", isPositive: false, iconBg: "bg-gradient-to-br from-[#1e40af] to-[#1e3a8a]" },
-  { symbol: "USDGBP", name: "USDGBP", price: "0.7412", change: "-0.11%", isPositive: false, iconBg: "bg-gradient-to-br from-[#dc2626] to-[#b91c1c]" },
-  { symbol: "USDJPY", name: "USDJPY", price: "158.3057", change: "-0.05%", isPositive: false, iconBg: "bg-gradient-to-br from-[#dc2626] to-[#991b1b]" },
-  { symbol: "BTC", name: "Bitcoin", price: "89,048.19", change: "+0.88%", isPositive: true, iconBg: "bg-gradient-to-br from-[#f59e0b] to-[#d97706]" },
-  { symbol: "ETH", name: "Ethereum", price: "2,945.44", change: "+1.79%", isPositive: true, iconBg: "bg-gradient-to-br from-[#6366f1] to-[#4f46e5]" },
-]
-
+// Market Data Component with Real-time Prices
 function MarketData() {
   const { t } = useTranslation()
+  const { prices, loading } = usePrices(5000) // Refresh every 5 seconds
+  
   return (
     <div className="mx-4 mt-4 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-1 py-4">
@@ -128,23 +118,27 @@ function MarketData() {
       </div>
 
       <div className="space-y-1">
-        {marketItems.map((item) => (
-          <div key={item.symbol} className="grid grid-cols-3 items-center px-1 py-3 hover:bg-muted/30 transition-colors rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center shadow-md`}>
-                <span className="text-xs font-bold text-white">{item.symbol.slice(0,2)}</span>
+        {loading ? (
+          <div className="text-center py-4 text-muted-foreground">Loading...</div>
+        ) : (
+          prices.map((item) => (
+            <div key={item.symbol} className="grid grid-cols-3 items-center px-1 py-3 hover:bg-muted/30 transition-colors rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center shadow-md`}>
+                  <span className="text-xs font-bold text-white">{item.symbol.slice(0,2)}</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground text-sm">{item.symbol}</div>
+                  <div className="text-xs text-muted-foreground">{item.name}</div>
+                </div>
               </div>
-              <div>
-                <div className="font-semibold text-foreground text-sm">{item.symbol}</div>
-                <div className="text-xs text-muted-foreground">{item.name}</div>
+              <div className="font-medium text-foreground text-sm">$ {item.price}</div>
+              <div className={`text-right font-semibold text-sm ${item.isPositive ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                {item.change}
               </div>
             </div>
-            <div className="font-medium text-foreground text-sm">$ {item.price}</div>
-            <div className={`text-right font-semibold text-sm ${item.isPositive ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-              {item.change}
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
       
       <div className="text-center py-4">

@@ -1,11 +1,12 @@
 
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Star, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductDropdown } from "./product-dropdown"
 import { useTranslation } from "react-i18next"
+import { getProductPrice, type PriceData } from "@/services/price-service"
 
 // Mock candlestick data
 const generateCandleData = () => {
@@ -32,10 +33,40 @@ interface TradePageProps {
   minimizedWidget?: React.ReactNode
 }
 
+// Map product names to symbols
+const productSymbolMap: Record<string, string> = {
+  "London Gold": "XAU",
+  "London Silver": "XAG",
+  "WTI Oil": "CL",
+  "COMEX Copper": "HG",
+  "Natural Gas Futures": "NG",
+  "USDAUD": "USDAUD",
+  "USDGBP": "USDGBP",
+  "USDJPY": "USDJPY",
+  "Bitcoin": "BTC",
+  "Ethereum": "ETH",
+}
+
 export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
   const { t } = useTranslation()
   const [timeframe, setTimeframe] = useState("24h")
   const [selectedProduct, setSelectedProduct] = useState("London Silver")
+  const [priceData, setPriceData] = useState<PriceData | null>(null)
+  
+  // Fetch price data when product changes
+  useEffect(() => {
+    const symbol = productSymbolMap[selectedProduct] || "XAG"
+    
+    const fetchPrice = async () => {
+      const data = await getProductPrice(symbol)
+      setPriceData(data)
+    }
+    
+    fetchPrice()
+    const interval = setInterval(fetchPrice, 5000) // Refresh every 5 seconds
+    
+    return () => clearInterval(interval)
+  }, [selectedProduct])
   
   return (
     <div className="min-h-full bg-background flex flex-col relative">
@@ -60,8 +91,8 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
             <div className="w-5 h-4 bg-[#fbbf24] border-2 border-white rounded-sm" />
           </div>
           <div>
-            <div className="font-semibold text-[#22c55e]">London Silver</div>
-            <div className="text-xs text-muted-foreground">XAG</div>
+            <div className={`font-semibold ${priceData?.changePercent && priceData.changePercent >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{selectedProduct}</div>
+            <div className="text-xs text-muted-foreground">{productSymbolMap[selectedProduct] || "XAG"}</div>
           </div>
         </div>
         <div className="flex gap-1">
@@ -88,26 +119,28 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
         <div className="flex justify-between">
           <div>
             <div className="text-xs text-white/70 mb-1">{t('saxo.latest_price')}</div>
-            <div className="text-3xl font-bold text-white">95.56</div>
+            <div className="text-3xl font-bold text-white">{priceData?.price.toLocaleString() || "---"}</div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-white/70">{t('saxo.change_24h')}</span>
-              <span className="text-sm text-[#ef4444] font-medium">-0.042%</span>
+              <span className={`text-sm font-medium ${priceData?.changePercent && priceData.changePercent >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                {priceData?.changePercent !== undefined ? `${priceData.changePercent >= 0 ? '+' : ''}${priceData.changePercent.toFixed(2)}%` : "---"}
+              </span>
             </div>
           </div>
           <div className="text-right space-y-2">
             <div>
               <div className="text-xs text-white/70">{t('saxo.high_24h')}</div>
-              <div className="text-sm text-white font-medium">95.76</div>
+              <div className="text-sm text-white font-medium">{priceData?.high24h?.toLocaleString() || "-"}</div>
             </div>
             <div>
               <div className="text-xs text-white/70">{t('saxo.volume_24h')}</div>
-              <div className="text-sm text-white font-medium">-</div>
+              <div className="text-sm text-white font-medium">{priceData?.volume24h?.toLocaleString() || "-"}</div>
             </div>
           </div>
           <div className="text-right space-y-2">
             <div>
               <div className="text-xs text-white/70">{t('saxo.low_24h')}</div>
-              <div className="text-sm text-white font-medium">95.29</div>
+              <div className="text-sm text-white font-medium">{priceData?.low24h?.toLocaleString() || "-"}</div>
             </div>
             <div>
               <div className="text-xs text-white/70">{t('saxo.amount_24h')}</div>
@@ -125,9 +158,9 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
         <span className="text-[#a855f7]">MA30: 4,825.65</span>
       </div>
 
-      {/* Candlestick Chart - positioned in lower half */}
-      <div className="flex-1 px-2 relative min-h-[280px]">
-        <div className="h-[220px] relative">
+      {/* Candlestick Chart - positioned to fill remaining space */}
+      <div className="flex-1 px-2 relative pb-0">
+        <div className="h-[200px] relative">
           {/* Price labels on right */}
           <div className="absolute right-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-muted-foreground text-right pr-1 py-2">
             <span>4,845.00</span>
@@ -192,24 +225,24 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
         </div>
 
         {/* MACD Section */}
-        <div className="mt-4 border-t border-border/30 pt-2">
-          <div className="flex gap-4 text-xs px-2 mb-2">
+        <div className="mt-2 border-t border-border/30 pt-2">
+          <div className="flex gap-4 text-xs px-2 mb-1">
             <span className="text-muted-foreground">MACD(5,7,30)</span>
             <span className="text-[#3b82f6]">DIF: 1.4864</span>
             <span className="text-[#f59e0b]">DEA: 0.0012</span>
           </div>
-          <div className="flex gap-4 text-xs px-2 mb-2">
+          <div className="flex gap-4 text-xs px-2 mb-1">
             <span className="text-[#a855f7]">MACD: 2.9705</span>
           </div>
           
           {/* MACD bars */}
-          <div className="h-[60px] flex items-center gap-[2px] px-2">
+          <div className="h-[50px] flex items-center gap-[2px] px-2">
             {macdData.map((value, i) => (
               <div 
                 key={i}
                 className={`flex-1 ${value > 0 ? 'bg-[#22c55e]' : 'bg-[#ef4444]'}`}
                 style={{
-                  height: `${Math.abs(value) * 12}px`,
+                  height: `${Math.abs(value) * 10}px`,
                   marginTop: value > 0 ? 'auto' : undefined,
                   marginBottom: value < 0 ? 'auto' : undefined,
                 }}
@@ -218,14 +251,14 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
           </div>
           
           {/* Watermark */}
-          <div className="text-xs text-muted-foreground/50 px-2 mt-1">
+          <div className="text-xs text-muted-foreground/50 px-2 mt-0">
             <span className="font-medium">TDMOCK</span>
           </div>
         </div>
       </div>
 
       {/* Floating Buttons Area - positioned alongside K-line chart */}
-      <div className="absolute bottom-32 right-4 flex flex-col items-center gap-3 z-30">
+      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-3 z-30">
         {/* Minimized Widget */}
         {minimizedWidget}
         
