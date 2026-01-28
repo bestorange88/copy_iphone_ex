@@ -7,9 +7,9 @@ const menuItems = [
     group: 'main',
     items: [
       { id: 'notification', label: '通知', badge: 0, icon: 'bell' },
-      { id: 'asset', label: '資產管理', path: '/payment-platform/wallet', icon: 'wallet' },
+      { id: 'asset', label: '資產管理', path: '/wallet', icon: 'wallet' },
       { id: 'loan', label: '平台借貸', icon: 'bank' },
-      { id: 'records', label: '交易記錄', path: '/payment-platform/trade-records', icon: 'history' },
+      { id: 'records', label: '交易記錄', path: '/trade-records', icon: 'history' },
     ]
   },
   {
@@ -94,7 +94,7 @@ export default function PaymentProfile() {
       navigate(item.path);
     } else if (item.id === 'logout') {
       localStorage.removeItem('payment_logged_in');
-      navigate('/payment-platform/login');
+      navigate('/login');
     } else {
       alert(`${item.id} feature coming soon`);
     }

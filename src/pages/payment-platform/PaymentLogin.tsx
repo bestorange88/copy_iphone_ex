@@ -106,7 +106,7 @@ export default function PaymentLogin() {
         
         <div className="mt-6 text-center">
           <span className="text-gray-400">還沒有帳戶？ </span>
-          <button onClick={() => navigate('/payment-platform/register')} className="text-[#00d4aa] hover:underline">立即註冊</button>
+          <button onClick={() => navigate('/register')} className="text-[#00d4aa] hover:underline">立即註冊</button>
         </div>
         
         <div className="mt-8 text-center text-gray-500 text-xs">

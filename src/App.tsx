@@ -5,11 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import PhoneFrame from "@/components/phone/PhoneFrame";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -85,48 +86,77 @@ const App = () => (
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/trade" element={<Trade />} />
-                  <Route path="/markets" element={<Markets />} />
-                  <Route path="/contracts" element={<Contracts />} />
-                  <Route path="/earn" element={<Earn />} />
-                  <Route path="/swap" element={<Swap />} />
-                  <Route path="/deposit-withdraw" element={<DepositWithdraw />} />
-                  <Route path="/deposit" element={<DepositWithdraw />} />
-                  <Route path="/withdraw" element={<DepositWithdraw />} />
-                  <Route path="/otc" element={<OTC />} />
-                  <Route path="/mining" element={<Mining />} />
-                  <Route path="/news" element={<News />} />
-                  <Route path="/quant" element={<Quant />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/assets" element={<Assets />} />
-                  <Route path="/profile" element={<Profile />} />
-                                    <Route path="/kyc" element={<KYC />} />
-                                    <Route path="/kyc/advanced" element={<KYCAdvanced />} />
-                                    <Route path="/kyc-verification" element={<KYCVerification />} />
+                  {/* Main route - Phone Frame with SAXO UI */}
+                  <Route path="/" element={
+                    <PhoneFrame>
+                      <PaymentHome />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/home" element={
+                    <PhoneFrame>
+                      <PaymentHome />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/trade" element={
+                    <PhoneFrame>
+                      <PaymentTrade />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/market" element={
+                    <PhoneFrame>
+                      <PaymentMarket />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/wallet" element={
+                    <PhoneFrame>
+                      <PaymentWallet />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/profile" element={
+                    <PhoneFrame>
+                      <PaymentProfile />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/login" element={
+                    <PhoneFrame>
+                      <PaymentLogin />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/register" element={
+                    <PhoneFrame>
+                      <PaymentRegister />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/deposit" element={
+                    <PhoneFrame>
+                      <PaymentDeposit />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/withdraw" element={
+                    <PhoneFrame>
+                      <PaymentWithdraw />
+                    </PhoneFrame>
+                  } />
+                  <Route path="/trade-records" element={
+                    <PhoneFrame>
+                      <PaymentTradeRecords />
+                    </PhoneFrame>
+                  } />
+
+                  {/* Legacy routes - redirect to new paths */}
+                  <Route path="/payment-platform" element={<Navigate to="/" replace />} />
+                  <Route path="/payment-platform/*" element={<Navigate to="/" replace />} />
+
+                  {/* Admin routes */}
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin" element={<Admin />} />
-                  <Route path="/customer-service" element={<CustomerService />} />
-                  <Route path="/help" element={<HelpCenter />} />
-                  <Route path="/service" element={<ServiceLogin />} />
-                  <Route path="/service/dashboard" element={<ServiceDashboard />} />
-                                    <Route path="/download" element={<AppDownload />} />
-                                                                        <Route path="/messages" element={<Messages />} />
-                  
-                                                      {/* Payment Platform Routes (SAXO UI) */}
-                                                      <Route path="/payment-platform" element={<PaymentHome />} />
-                                                      <Route path="/payment-platform/trade" element={<PaymentTrade />} />
-                                                      <Route path="/payment-platform/market" element={<PaymentMarket />} />
-                                                      <Route path="/payment-platform/wallet" element={<PaymentWallet />} />
-                                                      <Route path="/payment-platform/profile" element={<PaymentProfile />} />
-                                                      <Route path="/payment-platform/login" element={<PaymentLogin />} />
-                                                      <Route path="/payment-platform/register" element={<PaymentRegister />} />
-                                                      <Route path="/payment-platform/deposit" element={<PaymentDeposit />} />
-                                                      <Route path="/payment-platform/withdraw" element={<PaymentWithdraw />} />
-                                                      <Route path="/payment-platform/trade-records" element={<PaymentTradeRecords />} />
-                  
-                                                      <Route path="*" element={<NotFound />} />
+
+                  {/* Catch all */}
+                  <Route path="*" element={
+                    <PhoneFrame>
+                      <PaymentHome />
+                    </PhoneFrame>
+                  } />
                 </Routes>
               </Suspense>
             </BrowserRouter>

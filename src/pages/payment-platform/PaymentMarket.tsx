@@ -107,7 +107,7 @@ export default function PaymentMarket() {
                   <tr 
                     key={item.id} 
                     className="border-b border-gray-800 hover:bg-[#252a4a] cursor-pointer transition-colors"
-                    onClick={() => navigate('/payment-platform/trade')}
+                    onClick={() => navigate('/trade')}
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">

@@ -53,7 +53,7 @@ export default function PaymentTradeRecords() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025]">
       <header className="px-4 py-4 flex items-center justify-between">
-        <button onClick={() => navigate('/payment-platform/wallet')} className="text-gray-400">
+        <button onClick={() => navigate('/wallet')} className="text-gray-400">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>

@@ -102,7 +102,7 @@ export default function PaymentWallet() {
 
         <div className="flex gap-3 mb-6">
           <button 
-            onClick={() => navigate('/payment-platform/deposit')}
+            onClick={() => navigate('/deposit')}
             className="flex-1 bg-[#00d4aa] text-white py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#00b894] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ export default function PaymentWallet() {
             入款
           </button>
           <button 
-            onClick={() => navigate('/payment-platform/withdraw')}
+            onClick={() => navigate('/withdraw')}
             className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export default function PaymentWallet() {
             取款
           </button>
           <button 
-            onClick={() => navigate('/payment-platform/trade-records')}
+            onClick={() => navigate('/trade-records')}
             className="flex-1 bg-[#252a4a] text-white py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#3a4070] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +209,7 @@ export default function PaymentWallet() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-white font-semibold">最近交易</h2>
             <button 
-              onClick={() => navigate('/payment-platform/trade-records')}
+              onClick={() => navigate('/trade-records')}
               className="flex items-center gap-1 text-gray-400 text-sm"
             >
               更多

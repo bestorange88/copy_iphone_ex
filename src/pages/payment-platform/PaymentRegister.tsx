@@ -163,7 +163,7 @@ export default function PaymentRegister() {
         
         <div className="mt-6 text-center">
           <span className="text-gray-400">已有帳戶？ </span>
-          <button onClick={() => navigate('/payment-platform/login')} className="text-[#00d4aa] hover:underline">立即登錄</button>
+          <button onClick={() => navigate('/login')} className="text-[#00d4aa] hover:underline">立即登錄</button>
         </div>
         
         <div className="mt-8 text-center text-gray-500 text-xs">

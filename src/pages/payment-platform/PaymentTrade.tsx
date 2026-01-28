@@ -48,7 +48,7 @@ export default function PaymentTrade() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/payment-platform/login');
+      navigate('/login');
     }
   }, [user, authLoading, navigate]);
 
@@ -156,7 +156,7 @@ export default function PaymentTrade() {
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025] pb-20">
       <header className="px-4 py-3 flex justify-between items-center">
         <button 
-          onClick={() => navigate('/payment-platform/trade-records')}
+          onClick={() => navigate('/trade-records')}
           className="text-gray-400 text-sm"
         >
           交易記錄
