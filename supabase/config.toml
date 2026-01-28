@@ -1,0 +1,4 @@
+project_id = "dcpvuzuglnzlwociuvvl"
+
+[functions.cs-sse]
+verify_jwt = false

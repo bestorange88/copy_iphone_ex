@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PaymentNavBar from './components/PaymentNavBar';
 
 const allMarketData = [
@@ -44,7 +44,7 @@ const tabs = [
 ];
 
 export default function PaymentMarket() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [favorites, setFavorites] = useState<number[]>([1, 9]);
 
@@ -107,7 +107,7 @@ export default function PaymentMarket() {
                   <tr 
                     key={item.id} 
                     className="border-b border-gray-800 hover:bg-[#252a4a] cursor-pointer transition-colors"
-                    onClick={() => setLocation('/trade')}
+                    onClick={() => navigate('/payment-platform/trade')}
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function PaymentMarket() {
         </div>
       </div>
 
-      <PaymentNavBar active="market" />
+      <PaymentNavBar />
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function PaymentLogin() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -11,7 +11,7 @@ export default function PaymentLogin() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('payment_logged_in', 'true');
-    setLocation('/');
+    navigate('/payment-platform');
   };
 
   return (
@@ -106,7 +106,7 @@ export default function PaymentLogin() {
         
         <div className="mt-6 text-center">
           <span className="text-gray-400">還沒有帳戶？ </span>
-          <button onClick={() => setLocation('/register')} className="text-[#00d4aa] hover:underline">立即註冊</button>
+          <button onClick={() => navigate('/payment-platform/register')} className="text-[#00d4aa] hover:underline">立即註冊</button>
         </div>
         
         <div className="mt-8 text-center text-gray-500 text-xs">

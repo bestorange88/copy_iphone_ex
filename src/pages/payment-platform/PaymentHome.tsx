@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import PaymentNavBar from './components/PaymentNavBar';
 
 const marketData = [
@@ -16,7 +16,7 @@ const marketData = [
 ];
 
 export default function PaymentHome() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025] pb-20">
@@ -69,7 +69,7 @@ export default function PaymentHome() {
 
       <div className="flex justify-around py-6 px-4">
         <button 
-          onClick={() => setLocation('/deposit')}
+          onClick={() => navigate('/payment-platform/deposit')}
           className="flex flex-col items-center gap-2"
         >
           <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
@@ -80,7 +80,7 @@ export default function PaymentHome() {
           <span className="text-gray-400 text-sm">入款</span>
         </button>
         <button 
-          onClick={() => setLocation('/withdraw')}
+          onClick={() => navigate('/payment-platform/withdraw')}
           className="flex flex-col items-center gap-2"
         >
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
@@ -122,7 +122,7 @@ export default function PaymentHome() {
                 <tr 
                   key={item.id} 
                   className="border-b border-gray-800 hover:bg-[#252a4a] cursor-pointer transition-colors"
-                  onClick={() => setLocation('/trade')}
+                  onClick={() => navigate('/payment-platform/trade')}
                 >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export default function PaymentHome() {
           </table>
           <div className="text-center py-3">
             <button 
-              onClick={() => setLocation('/market')}
+              onClick={() => navigate('/payment-platform/market')}
               className="text-[#00d4aa] text-sm hover:underline"
             >
               查看全部
@@ -207,13 +207,13 @@ export default function PaymentHome() {
           <p className="text-gray-400 text-sm mb-4">Supports multiple deposit methods, fast arrival, and instant withdrawal processing.</p>
           <div className="flex gap-4">
             <button 
-              onClick={() => setLocation('/deposit')}
+              onClick={() => navigate('/payment-platform/deposit')}
               className="bg-[#00d4aa] text-white px-6 py-2 rounded-lg hover:bg-[#00b894] transition-colors"
             >
               Deposit
             </button>
             <button 
-              onClick={() => setLocation('/withdraw')}
+              onClick={() => navigate('/payment-platform/withdraw')}
               className="bg-transparent border border-[#00d4aa] text-[#00d4aa] px-6 py-2 rounded-lg hover:bg-[#00d4aa]/10 transition-colors"
             >
               Withdraw
@@ -239,7 +239,7 @@ export default function PaymentHome() {
         </p>
       </section>
 
-      <PaymentNavBar active="home" />
+      <PaymentNavBar />
     </div>
   );
 }

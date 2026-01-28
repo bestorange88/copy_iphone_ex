@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const networks = [
   { id: 'trc20', name: 'Tron (TRC20)', icon: '/uploads/20250618/79cbcbdfcc32e9ed14054fb9f306d.png' },
@@ -10,7 +10,7 @@ const currencies = [
 ];
 
 export default function PaymentDeposit() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [selectedCurrency] = useState(currencies[0]);
   const [selectedNetwork, setSelectedNetwork] = useState(networks[0]);
   const [showNetworkSelector, setShowNetworkSelector] = useState(false);
@@ -29,13 +29,13 @@ export default function PaymentDeposit() {
       return;
     }
     alert('入款申請已成功提交！');
-    setLocation('/wallet');
+    navigate('/payment-platform/wallet');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025]">
       <header className="px-4 py-4 flex items-center justify-between">
-        <button onClick={() => setLocation('/wallet')} className="text-gray-400">
+        <button onClick={() => navigate('/payment-platform/wallet')} className="text-gray-400">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>

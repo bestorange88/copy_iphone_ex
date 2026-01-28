@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import PaymentNavBar from './components/PaymentNavBar';
 
 const menuItems = [
@@ -7,9 +7,9 @@ const menuItems = [
     group: 'main',
     items: [
       { id: 'notification', label: '通知', badge: 0, icon: 'bell' },
-      { id: 'asset', label: '資產管理', path: '/wallet', icon: 'wallet' },
+      { id: 'asset', label: '資產管理', path: '/payment-platform/wallet', icon: 'wallet' },
       { id: 'loan', label: '平台借貸', icon: 'bank' },
-      { id: 'records', label: '交易記錄', path: '/trade-records', icon: 'history' },
+      { id: 'records', label: '交易記錄', path: '/payment-platform/trade-records', icon: 'history' },
     ]
   },
   {
@@ -79,7 +79,7 @@ const getIcon = (iconName: string) => {
 };
 
 export default function PaymentProfile() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   const userInfo = {
     phone: '82****88',
@@ -91,10 +91,10 @@ export default function PaymentProfile() {
 
   const handleMenuClick = (item: { id: string; path?: string }) => {
     if (item.path) {
-      setLocation(item.path);
+      navigate(item.path);
     } else if (item.id === 'logout') {
       localStorage.removeItem('payment_logged_in');
-      setLocation('/login');
+      navigate('/payment-platform/login');
     } else {
       alert(`${item.id} feature coming soon`);
     }
@@ -189,7 +189,7 @@ export default function PaymentProfile() {
         ))}
       </div>
 
-      <PaymentNavBar active="profile" />
+      <PaymentNavBar />
     </div>
   );
 }

@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useWebSocketPrice } from '@/hooks/useWebSocketPrice';
+import { TradingChart } from '@/components/trading/TradingChart';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import PaymentNavBar from './components/PaymentNavBar';
 
 const tradingPairs = [
-  { id: 1, name: 'London Gold', symbol: 'XAU', price: 5190.81, change: 2.07, high: 5201.73, low: 5076.52 },
-  { id: 2, name: 'London Silver', symbol: 'XAG', price: 113.66, change: 5.16, high: 115.20, low: 108.10 },
-  { id: 3, name: 'WTI Oil', symbol: 'CL', price: 62.438, change: 1.34, high: 63.50, low: 61.20 },
-  { id: 4, name: 'Bitcoin', symbol: 'BTC', price: 89426.83, change: 1.32, high: 90500, low: 87800 },
+  { id: 1, name: '倫敦金', symbol: 'XAU/USDT', wsSymbol: 'XAU-USDT', price: 5190.81, change: 2.07 },
+  { id: 2, name: '倫敦銀', symbol: 'XAG/USDT', wsSymbol: 'XAG-USDT', price: 113.66, change: 5.16 },
+  { id: 3, name: 'WTI原油', symbol: 'CL/USDT', wsSymbol: 'CL-USDT', price: 62.438, change: 1.34 },
+  { id: 4, name: '比特幣', symbol: 'BTC/USDT', wsSymbol: 'BTC-USDT', price: 89426.83, change: 1.32 },
+  { id: 5, name: '以太坊', symbol: 'ETH/USDT', wsSymbol: 'ETH-USDT', price: 3245.50, change: 2.15 },
+  { id: 6, name: '瑞波幣', symbol: 'XRP/USDT', wsSymbol: 'XRP-USDT', price: 0.52, change: -1.25 },
 ];
 
 const periods = [
@@ -21,7 +28,9 @@ const periods = [
 const quickAmounts = [500, 1000, 2000, 5000, 10000];
 
 export default function PaymentTrade() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [selectedPair, setSelectedPair] = useState(tradingPairs[0]);
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showTradeModal, setShowTradeModal] = useState(false);
@@ -29,24 +38,125 @@ export default function PaymentTrade() {
   const [selectedPeriod, setSelectedPeriod] = useState(periods[0]);
   const [amount, setAmount] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const balance = 4552025.50;
+  const { price, priceChangePercent, high24h, low24h, loading: priceLoading } = useWebSocketPrice(
+    selectedPair.wsSymbol,
+    { enabled: true }
+  );
 
-  const handleTrade = () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      alert('Please enter investment amount');
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/payment-platform/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('user_balances')
+        .select('available_balance')
+        .eq('user_id', user.id)
+        .eq('currency', 'USDT')
+        .single();
+      
+      if (data) {
+        setBalance(parseFloat(data.available_balance.toString()));
+      }
+    };
+
+    fetchBalance();
+  }, [user]);
+
+  const handleTrade = async () => {
+    if (!user) {
+      toast({
+        title: '請先登入',
+        description: '您需要登入才能進行交易',
+        variant: 'destructive',
+      });
       return;
     }
-    alert(`${tradeType === 'buy' ? 'Buy' : 'Sell'} order placed: ${amount} USDT for ${selectedPeriod.seconds} seconds`);
-    setShowTradeModal(false);
-    setAmount('');
+
+    if (!amount || parseFloat(amount) <= 0) {
+      toast({
+        title: '請輸入投資金額',
+        description: '投資金額必須大於0',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const investAmount = parseFloat(amount);
+    if (investAmount > balance) {
+      toast({
+        title: '餘額不足',
+        description: '您的可用餘額不足以完成此交易',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const currentPrice = price || selectedPair.price;
+      const expiryTime = new Date(Date.now() + selectedPeriod.seconds * 1000);
+
+      const { error } = await supabase.from('trade_orders').insert({
+        user_id: user.id,
+        pair: selectedPair.symbol,
+        side: tradeType === 'buy' ? 'buy' : 'sell',
+        order_type: 'market',
+        price: currentPrice,
+        amount: investAmount,
+        status: 'pending',
+        expires_at: expiryTime.toISOString(),
+      });
+
+      if (error) throw error;
+
+      await supabase
+        .from('user_balances')
+        .update({ 
+          available_balance: balance - investAmount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('currency', 'USDT');
+
+      setBalance(prev => prev - investAmount);
+
+      toast({
+        title: '交易成功',
+        description: `${tradeType === 'buy' ? '買漲' : '買跌'}訂單已提交: ${investAmount} USDT，期限 ${selectedPeriod.seconds} 秒`,
+      });
+
+      setShowTradeModal(false);
+      setAmount('');
+    } catch (error) {
+      console.error('Trade error:', error);
+      toast({
+        title: '交易失敗',
+        description: '提交訂單時發生錯誤，請稍後再試',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const displayPrice = price || selectedPair.price;
+  const displayChange = priceChangePercent || selectedPair.change;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025] pb-20">
       <header className="px-4 py-3 flex justify-between items-center">
         <button 
-          onClick={() => setLocation('/trade-records')}
+          onClick={() => navigate('/payment-platform/trade-records')}
           className="text-gray-400 text-sm"
         >
           交易記錄
@@ -73,14 +183,9 @@ export default function PaymentTrade() {
       <div className="px-4">
         <div className="bg-[#1a2040] rounded-xl p-4 mb-4">
           <div className="flex items-center gap-3 mb-4">
-            <img 
-              src={`/uploads/20250717/676d9c325102c0f69aa65aeb3ccfa.png`}
-              alt={selectedPair.name}
-              className="w-10 h-10 rounded-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = `https://placehold.co/40x40/1a1f3c/00d4aa?text=${selectedPair.symbol.charAt(0)}`;
-              }}
-            />
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+              {selectedPair.symbol.charAt(0)}
+            </div>
             <div>
               <h3 className="text-white font-semibold">{selectedPair.name}</h3>
               <span className="text-gray-500 text-sm">{selectedPair.symbol}</span>
@@ -95,36 +200,26 @@ export default function PaymentTrade() {
           <div className="flex justify-between items-start mb-4 bg-gradient-to-r from-[#2a2a5a] to-[#3a3a6a] rounded-lg p-3">
             <div>
               <div className="text-gray-500 text-sm">最新價格</div>
-              <div className="text-2xl font-bold text-white">{selectedPair.price.toLocaleString()}</div>
-              <div className={`text-sm ${selectedPair.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                24小時漲跌幅 {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change}%
+              <div className="text-2xl font-bold text-white">
+                {priceLoading ? '...' : displayPrice.toLocaleString()}
+              </div>
+              <div className={`text-sm ${displayChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                24小時漲跌幅 {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
               </div>
             </div>
             <div className="text-right text-sm">
-              <div className="text-gray-500">24小時最高價 <span className="text-white">{selectedPair.high.toLocaleString()}</span></div>
-              <div className="text-gray-500">24小時最低價 <span className="text-white">{selectedPair.low.toLocaleString()}</span></div>
+              <div className="text-gray-500">24小時最高價 <span className="text-white">{high24h?.toLocaleString() || '-'}</span></div>
+              <div className="text-gray-500">24小時最低價 <span className="text-white">{low24h?.toLocaleString() || '-'}</span></div>
               <div className="text-gray-500">24小時成交量 <span className="text-white">-</span></div>
               <div className="text-gray-500">24小時成交額 <span className="text-white">-</span></div>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#1a2040] rounded-xl p-4 mb-4 h-64 flex items-center justify-center">
-          <div className="text-center">
-            <img 
-              src="https://www.saxowdaer.top/base/whitelogo-B8chil.png"
-              alt="Chart"
-              className="w-32 h-32 mx-auto opacity-30"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <p className="text-gray-500 mt-4">K-Line Chart Area</p>
-            <p className="text-gray-600 text-sm">Real-time trading chart will be displayed here</p>
-          </div>
+        <div className="bg-[#1a2040] rounded-xl mb-4 overflow-hidden">
+          <TradingChart pair={selectedPair.symbol} />
         </div>
 
-        {/* Floating Buy/Sell Buttons - Mobile Style */}
         <div className="fixed right-4 bottom-24 flex flex-col gap-3 z-40">
           <button 
             onClick={() => {
@@ -157,7 +252,7 @@ export default function PaymentTrade() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
           <div className="bg-[#1a2040] w-full rounded-t-2xl p-4 max-h-[70vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-semibold">Select Trading Pair</h3>
+              <h3 className="text-white font-semibold">選擇交易對</h3>
               <button onClick={() => setShowPairSelector(false)} className="text-gray-500">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -206,11 +301,8 @@ export default function PaymentTrade() {
                 <span className={`px-3 py-1 rounded border ${tradeType === 'buy' ? 'text-green-500 border-green-500' : 'text-red-500 border-red-500'}`}>
                   {tradeType === 'buy' ? '買漲' : '買跌'} · {selectedPair.name}({selectedPair.symbol})
                 </span>
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
               </div>
-              <div className="text-[#00d4aa] font-semibold">{selectedPair.price.toLocaleString()}</div>
+              <div className="text-[#00d4aa] font-semibold">{displayPrice.toLocaleString()}</div>
             </div>
 
             <div className="mb-4">
@@ -272,22 +364,19 @@ export default function PaymentTrade() {
 
             <button
               onClick={handleTrade}
-              className="w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
+              disabled={isSubmitting}
+              className="w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white disabled:opacity-50"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-              立即交易
-            </button>
-
-            <button
-              onClick={() => setLocation('/market')}
-              className="w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 mt-2 bg-[#252a4a] text-white"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-              市場
+              {isSubmitting ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                  立即交易
+                </>
+              )}
             </button>
 
             <div className="text-center text-gray-500 text-sm mt-4">
@@ -296,17 +385,15 @@ export default function PaymentTrade() {
 
             <button 
               onClick={() => setShowTradeModal(false)}
-              className="absolute top-4 right-4 text-gray-500"
+              className="w-full py-3 text-gray-400 mt-2"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              取消
             </button>
           </div>
         </div>
       )}
 
-      <PaymentNavBar active="trade" />
+      <PaymentNavBar />
     </div>
   );
 }

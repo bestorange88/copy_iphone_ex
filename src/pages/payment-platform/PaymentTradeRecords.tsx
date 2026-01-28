@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const tradeRecords = [
   { id: 1, pair: 'XAU', name: 'London Gold', type: 'buy', result: 'win', period: 30, ytm: 40, profit: 2000, openPrice: 5188.21, closePrice: 5190.81, time: '01/22/2026, 16:36:41', orderId: '202601230036101795' },
@@ -18,7 +18,7 @@ const filters = {
 };
 
 export default function PaymentTradeRecords() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('全部');
   const [typeFilter, setTypeFilter] = useState('全部');
   const [periodFilter, setPeriodFilter] = useState('全部');
@@ -53,7 +53,7 @@ export default function PaymentTradeRecords() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1f3c] to-[#0d1025]">
       <header className="px-4 py-4 flex items-center justify-between">
-        <button onClick={() => setLocation('/wallet')} className="text-gray-400">
+        <button onClick={() => navigate('/payment-platform/wallet')} className="text-gray-400">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
