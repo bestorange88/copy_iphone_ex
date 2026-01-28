@@ -53,8 +53,9 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+            workbox: {
+              globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+              maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // 移除 navigateFallback 以避免网速慢时显示离线页面
         // navigateFallback: '/offline.html',
         // navigateFallbackDenylist: [/^\/api/, /^\/supabase/],

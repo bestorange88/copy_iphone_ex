@@ -13,7 +13,6 @@ import ko from './locales/ko.json';
 import ar from './locales/ar.json';
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
