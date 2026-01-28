@@ -69,7 +69,7 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
   }, [selectedProduct])
   
   return (
-    <div className="min-h-full bg-background flex flex-col relative">
+    <div className="h-full bg-background flex flex-col relative overflow-hidden">
       {/* Header */}
       <header className="flex items-center justify-between px-4 pt-2 pb-3">
         <button type="button" className="text-sm text-muted-foreground">
@@ -151,16 +151,16 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
       </div>
 
       {/* MA Indicators */}
-      <div className="px-4 py-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+      <div className="px-4 pt-2 pb-0 flex flex-wrap gap-x-4 gap-y-1 text-xs">
         <span className="text-muted-foreground">MA(5,7,30)</span>
         <span className="text-[#f59e0b]">MA5: 4,828.45</span>
         <span className="text-[#3b82f6]">MA7: 4,826.66</span>
         <span className="text-[#a855f7]">MA30: 4,825.65</span>
       </div>
 
-      {/* Candlestick Chart - positioned to fill remaining space */}
-      <div className="flex-1 px-2 relative pb-0">
-        <div className="h-[200px] relative">
+      {/* Candlestick Chart - positioned at bottom with 8px gap from above */}
+      <div className="flex-1 px-2 relative mt-2 flex flex-col justify-end pb-0">
+        <div className="h-[180px] relative">
           {/* Price labels on right */}
           <div className="absolute right-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-muted-foreground text-right pr-1 py-2">
             <span>4,845.00</span>
@@ -225,18 +225,18 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
         </div>
 
         {/* MACD Section */}
-        <div className="mt-2 border-t border-border/30 pt-2">
-          <div className="flex gap-4 text-xs px-2 mb-1">
+        <div className="mt-1 border-t border-border/30 pt-1">
+          <div className="flex gap-4 text-xs px-2 mb-0">
             <span className="text-muted-foreground">MACD(5,7,30)</span>
             <span className="text-[#3b82f6]">DIF: 1.4864</span>
             <span className="text-[#f59e0b]">DEA: 0.0012</span>
           </div>
-          <div className="flex gap-4 text-xs px-2 mb-1">
+          <div className="flex gap-4 text-xs px-2 mb-0">
             <span className="text-[#a855f7]">MACD: 2.9705</span>
           </div>
           
           {/* MACD bars */}
-          <div className="h-[50px] flex items-center gap-[2px] px-2">
+          <div className="h-[40px] flex items-center gap-[2px] px-2">
             {macdData.map((value, i) => (
               <div 
                 key={i}
@@ -251,14 +251,14 @@ export function TradePage({ onBuySell, minimizedWidget }: TradePageProps) {
           </div>
           
           {/* Watermark */}
-          <div className="text-xs text-muted-foreground/50 px-2 mt-0">
+          <div className="text-xs text-muted-foreground/50 px-2 mt-0 pb-1">
             <span className="font-medium">TDMOCK</span>
           </div>
         </div>
       </div>
 
       {/* Floating Buttons Area - positioned alongside K-line chart */}
-      <div className="absolute bottom-4 right-4 flex flex-col items-center gap-3 z-30">
+      <div className="absolute bottom-2 right-4 flex flex-col items-center gap-2 z-30">
         {/* Minimized Widget */}
         {minimizedWidget}
         
