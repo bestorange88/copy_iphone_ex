@@ -1,10 +1,104 @@
 import { ReactNode, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PhoneFrameProps {
   children: ReactNode;
+  showNavBar?: boolean;
 }
 
-export default function PhoneFrame({ children }: PhoneFrameProps) {
+interface PhoneNavBarProps {
+  currentPath: string;
+  onNavigate: (path: string) => void;
+}
+
+function PhoneNavBar({ currentPath, onNavigate }: PhoneNavBarProps) {
+  const getActiveTab = () => {
+    if (currentPath === '/' || currentPath === '/home') return 'home';
+    if (currentPath.includes('/trade')) return 'trade';
+    if (currentPath.includes('/market')) return 'market';
+    if (currentPath.includes('/wallet')) return 'wallet';
+    if (currentPath.includes('/profile')) return 'profile';
+    return 'home';
+  };
+  
+  const active = getActiveTab();
+
+  const navItems = [
+    {
+      id: 'home',
+      label: '首頁',
+      path: '/home',
+      icon: (isActive: boolean) => (
+        <svg className={`w-6 h-6 ${isActive ? 'text-[#00d4aa]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      id: 'trade',
+      label: '交易',
+      path: '/trade',
+      icon: (isActive: boolean) => (
+        <svg className={`w-6 h-6 ${isActive ? 'text-[#00d4aa]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      ),
+    },
+    {
+      id: 'market',
+      label: '市場',
+      path: '/market',
+      icon: (isActive: boolean) => (
+        <svg className={`w-6 h-6 ${isActive ? 'text-[#00d4aa]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'wallet',
+      label: '錢包',
+      path: '/wallet',
+      icon: (isActive: boolean) => (
+        <svg className={`w-6 h-6 ${isActive ? 'text-[#00d4aa]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'profile',
+      label: '我的',
+      path: '/profile',
+      icon: (isActive: boolean) => (
+        <svg className={`w-6 h-6 ${isActive ? 'text-[#00d4aa]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <nav className="bg-[#0d1025] border-t border-gray-800 px-4 py-2">
+      <div className="flex justify-around items-center">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onNavigate(item.path)}
+            className="flex flex-col items-center gap-1 py-1 px-3"
+          >
+            {item.icon(active === item.id)}
+            <span className={`text-xs ${active === item.id ? 'text-[#00d4aa]' : 'text-gray-500'}`}>
+              {item.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+export default function PhoneFrame({ children, showNavBar = true }: PhoneFrameProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
@@ -44,14 +138,13 @@ export default function PhoneFrame({ children }: PhoneFrameProps) {
              style={{
                boxShadow: '0 0 0 2px #1a1a2e, 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.05)'
              }}>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[126px] h-[34px] bg-black rounded-b-[18px] z-50 flex items-center justify-center gap-2">
-            <div className="w-[8px] h-[8px] bg-[#1a1a2e] rounded-full"></div>
-            <div className="w-[50px] h-[5px] bg-[#1a1a2e] rounded-full"></div>
-          </div>
           
-          <div className="absolute top-[6px] left-0 right-0 h-[28px] flex items-center justify-between px-8 z-40">
-            <span className="text-white text-[14px] font-semibold tracking-tight">{currentTime}</span>
-            <div className="flex items-center gap-[6px]">
+          <div className="absolute top-[12px] left-0 right-0 h-[32px] flex items-center justify-between px-6 z-40">
+            <span className="text-white text-[15px] font-semibold tracking-tight">{currentTime}</span>
+            <div className="absolute left-1/2 -translate-x-1/2 w-[120px] h-[36px] bg-black rounded-full flex items-center justify-center">
+              <div className="w-[12px] h-[12px] bg-[#1a1a2e] rounded-full absolute left-[14px]"></div>
+            </div>
+            <div className="flex items-center gap-[5px]">
               <svg className="w-[17px] h-[11px] text-white" viewBox="0 0 17 11" fill="currentColor">
                 <rect x="0" y="3" width="3" height="8" rx="0.5" fillOpacity="0.3" />
                 <rect x="4.5" y="2" width="3" height="9" rx="0.5" fillOpacity="0.5" />
@@ -68,25 +161,32 @@ export default function PhoneFrame({ children }: PhoneFrameProps) {
             </div>
           </div>
 
-          <div className="w-full h-full overflow-hidden">
-            <div className="w-full h-full overflow-y-auto overflow-x-hidden"
+          <div className="absolute inset-0 top-[50px] bottom-[20px] flex flex-col" id="phone-screen-container">
+            <style>{`
+              #phone-screen-container ::-webkit-scrollbar {
+                display: none;
+              }
+              #phone-screen-container > div:first-child nav {
+                display: none !important;
+              }
+            `}</style>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden"
                  style={{ 
                    scrollbarWidth: 'none', 
                    msOverflowStyle: 'none',
                    WebkitOverflowScrolling: 'touch'
                  }}>
-              <style>{`
-                .phone-screen::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              <div className="phone-screen">
+              <div className="pb-[70px]">
                 {children}
               </div>
             </div>
+            
+            {showNavBar && (
+              <PhoneNavBar currentPath={location.pathname} onNavigate={navigate} />
+            )}
           </div>
 
-          <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-white/80 rounded-full"></div>
+          <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-white/80 rounded-full z-50"></div>
         </div>
       </div>
     </div>
