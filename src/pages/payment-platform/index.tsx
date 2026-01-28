@@ -1,0 +1,10 @@
+export { default as PaymentLogin } from './PaymentLogin';
+export { default as PaymentRegister } from './PaymentRegister';
+export { default as PaymentHome } from './PaymentHome';
+export { default as PaymentTrade } from './PaymentTrade';
+export { default as PaymentMarket } from './PaymentMarket';
+export { default as PaymentWallet } from './PaymentWallet';
+export { default as PaymentProfile } from './PaymentProfile';
+export { default as PaymentDeposit } from './PaymentDeposit';
+export { default as PaymentWithdraw } from './PaymentWithdraw';
+export { default as PaymentTradeRecords } from './PaymentTradeRecords';
