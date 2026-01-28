@@ -72,6 +72,7 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 export function AppShell() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState("home")
   const [tradeStep, setTradeStep] = useState<TradeStep>("chart")
   const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null)
@@ -83,8 +84,27 @@ export function AppShell() {
   const [showAuth, setShowAuth] = useState(false)
   const [authView, setAuthView] = useState<"login" | "register" | "forgot">("login")
   const [showCustomerService, setShowCustomerService] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true'
+  })
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true)
+    setShowAuth(false)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('userEmail')
+    setIsLoggedIn(false)
+  }
 
   const handleBuySell = () => {
+    if (!isLoggedIn) {
+      setAuthView("login")
+      setShowAuth(true)
+      return
+    }
     setShowOrderSheet(true)
   }
 
@@ -257,6 +277,7 @@ export function AppShell() {
       <AuthPages
         initialView={authView}
         onClose={() => setShowAuth(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
     )
   }
