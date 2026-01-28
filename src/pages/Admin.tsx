@@ -40,7 +40,6 @@ import AdminCustomerServiceManager from "@/components/admin/AdminCustomerService
 import AdminMiningManager from "@/components/admin/AdminMiningManager";
 import AdminPWAStats from "@/components/admin/AdminPWAStats";
 import { AdminNoticeManager } from "@/components/admin/AdminNoticeManager";
-import AdminProductCollector from "@/components/admin/AdminProductCollector";
 
 interface MenuItem {
   id: string;
@@ -112,7 +111,6 @@ const menuGroups: MenuGroup[] = [
     label: "產品管理",
     icon: Coins,
     items: [
-      { id: "product-collector", label: "商品採集", icon: Download },
       { id: "earn", label: "理財產品", icon: Coins },
       { id: "mining", label: "礦機產品", icon: HardDrive },
       { id: "showcases", label: "大神曬單", icon: Star },
@@ -199,8 +197,6 @@ const Admin = () => {
         return <AdminOTCManager />;
       case "time-contract":
         return <AdminTimeContractManager />;
-      case "product-collector":
-        return <AdminProductCollector />;
       case "earn":
         return <AdminEarnManager />;
       case "mining":
